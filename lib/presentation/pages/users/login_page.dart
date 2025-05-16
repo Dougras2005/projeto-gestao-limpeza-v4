@@ -25,51 +25,53 @@ class LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  Future<void> _loginUser(BuildContext context) async {
-    final usuarioViewModel = Provider.of<UsuarioViewModel>(context, listen: false);
-    
-    setState(() => _isLoading = true);
-    
-    try {
-      final usuario = _usuarioController.text;
-      final senha = _senhaController.text;
+  Future<void> _loginUser() async {
+  final usuarioViewModel = Provider.of<UsuarioViewModel>(context, listen: false);
 
-      final userProfile = await usuarioViewModel.loginUser(usuario, senha);
+  setState(() => _isLoading = true);
 
-      if (!mounted) return;
+  try {
+    final usuario = _usuarioController.text;
+    final senha = _senhaController.text;
 
-      if (userProfile != null) {
-        // Redireciona para a página apropriada com base no perfil
-        if (userProfile.idperfil == 1) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomePageAdmin()),
-          );
-        } else if (userProfile.idperfil == 2) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomePageFuncionario()),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Perfil desconhecido.')),
-          );
-        }
+    final userProfile = await usuarioViewModel.loginUser(usuario, senha);
+
+    if (!mounted) return;
+
+    if (userProfile != null) {
+      // Redireciona para a página apropriada com base no perfil
+      if (userProfile.idperfil == 1) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePageAdmin()),
+        );
+      } else if (userProfile.idperfil == 2) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePageFuncionario()),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Usuário ou senha incorretos.')),
+          const SnackBar(content: Text('Perfil desconhecido.')),
         );
       }
-    } catch (e) {
-      if (!mounted) return;
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao fazer login: ${e.toString()}')),
+        const SnackBar(content: Text('Usuário ou senha incorretos.')),
       );
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
     }
+  } catch (e) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Erro ao fazer login: ${e.toString()}')),
+    );
+  } finally {
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+
   }
 
   @override
@@ -111,13 +113,13 @@ class LoginPageState extends State<LoginPage> {
                 icon: Icons.lock_outline,
                 obscureText: true,
                 focusNode: _senhaFocusNode,
-                onSubmitted: (_) => _loginUser(context),
+                onSubmitted: (_) => _loginUser(),
               ),
               const SizedBox(height: 24),
               _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : ElevatedButton(
-                      onPressed: () => _loginUser(context),
+                      onPressed: () => _loginUser(),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14.0),
                         backgroundColor: Colors.blue,

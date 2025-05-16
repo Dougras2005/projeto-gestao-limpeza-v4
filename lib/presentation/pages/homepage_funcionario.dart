@@ -1,4 +1,4 @@
-import 'package:app_estoque_limpeza/presentation/pages/users/movimenta%C3%A7%C3%A3o_page_user.dart';
+import 'package:app_estoque_limpeza/presentation/pages/users/movimentacao_page_user.dart';
 import 'package:flutter/material.dart';
 import 'package:app_estoque_limpeza/data/model/produto_model.dart';
 import 'package:app_estoque_limpeza/data/repositories/produto_repositories.dart';

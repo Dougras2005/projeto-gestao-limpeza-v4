@@ -105,4 +105,30 @@ class ProdutoRepositories {
       whereArgs: [id],
     );
   }
+
+  Future<List<Map<String, dynamic>>> getProdutoAgrupado() async {
+    final db = await DatabaseHelper.initDb();
+    const String sql = '''
+      SELECT 
+          p.Codigo,
+          p.Nome AS PRODUTO,
+          p."Local" AS LOCAL,
+          SUM(m.entrada) AS TOTAL_ENTRADA,
+          SUM(m.saida) AS TOTAL_SAIDA,
+          p.Quantidade AS SALDO
+      FROM 
+          movimentacao m
+      JOIN 
+          produto p ON p.idproduto = m.idmaterial
+      GROUP BY 
+          p.Codigo, p.Nome, p."Local", p.Quantidade;
+    ''';
+
+    try {
+      final List<Map<String, dynamic>> resultado = await db.rawQuery(sql);
+      return resultado;
+    } catch (e) {
+      throw Exception('Erro ao executar a consulta: $e');
+    }
   }
+}
