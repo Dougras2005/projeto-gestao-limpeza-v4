@@ -17,7 +17,8 @@ class ProdutoDetalhesPage extends StatefulWidget {
 class ProdutoDetalhesPageState extends State<ProdutoDetalhesPage> {
   final TextEditingController _quantidadeController = TextEditingController();
   final TextEditingController _dataController = TextEditingController();
-  final MovimentacaoRepository _movimentacaoRepository = MovimentacaoRepository();
+  final MovimentacaoRepository _movimentacaoRepository =
+      MovimentacaoRepository();
   final ProdutoViewModel _produtoViewModel = ProdutoViewModel();
   String _tipoMovimentacao = 'Entrada';
   ProdutoModel? _produtoAtual;
@@ -70,7 +71,8 @@ class ProdutoDetalhesPageState extends State<ProdutoDetalhesPage> {
       return;
     }
 
-    if (_tipoMovimentacao == 'Saída' && quantidade > _produtoAtual!.quantidade) {
+    if (_tipoMovimentacao == 'Saída' &&
+        quantidade > _produtoAtual!.quantidade) {
       _showDialog('Erro', 'Quantidade insuficiente em estoque.');
       return;
     }
@@ -151,27 +153,41 @@ class ProdutoDetalhesPageState extends State<ProdutoDetalhesPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              Card(
-                elevation: 4,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Código: ${_produtoAtual!.codigo}'),
-                      Text('Nome: ${_produtoAtual!.nome}'),
-                      Text('Quantidade: ${_produtoAtual!.quantidade}'),
-                      if (_produtoAtual!.validade != null)
-                        Text('Validade: ${_produtoAtual!.validade}'),
-                      Text('Local: ${_produtoAtual!.local}'),
-                      Text('Fornecedor: ${_produtoAtual!.nomeFornecedor}'),
-                      Text('Tipo: ${_produtoAtual!.tipoProduto}'),
-                    ],
+              SizedBox(
+                width: double.infinity,
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  elevation: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Código: ${_produtoAtual!.codigo}',
+                            style: const TextStyle(fontSize: 16)),
+                        Text('Nome: ${_produtoAtual!.nome}',
+                            style: const TextStyle(fontSize: 16)),
+                        Text('Quantidade: ${_produtoAtual!.quantidade}',
+                            style: const TextStyle(fontSize: 16)),
+                        if (_produtoAtual!.validade != null)
+                          Text('Validade: ${_produtoAtual!.validade}',
+                              style: const TextStyle(fontSize: 16)),
+                        Text('Local: ${_produtoAtual!.local}',
+                            style: const TextStyle(fontSize: 16)),
+                        Text('Fornecedor: ${_produtoAtual!.nomeFornecedor}',
+                            style: const TextStyle(fontSize: 16)),
+                        Text('Tipo: ${_produtoAtual!.tipoProduto}',
+                            style: const TextStyle(fontSize: 16)),
+                      ],
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: 20),
               Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 elevation: 4,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -179,8 +195,10 @@ class ProdutoDetalhesPageState extends State<ProdutoDetalhesPage> {
                     children: [
                       DropdownButtonFormField<String>(
                         value: _tipoMovimentacao,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Tipo de Movimentação',
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8)),
                         ),
                         items: ['Entrada', 'Saída']
                             .map((tipo) => DropdownMenuItem(
@@ -194,38 +212,62 @@ class ProdutoDetalhesPageState extends State<ProdutoDetalhesPage> {
                           });
                         },
                       ),
-                      const SizedBox(height: 10),
-                      TextField(
+                      const SizedBox(height: 12),
+                      TextFormField(
                         controller: _quantidadeController,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
+                        textInputAction: TextInputAction.next,
+                        decoration: InputDecoration(
                           labelText: 'Quantidade',
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8)),
                         ),
+                        onFieldSubmitted: (_) {
+                          FocusScope.of(context).nextFocus();
+                        },
                       ),
-                      const SizedBox(height: 10),
-                      TextField(
+                      const SizedBox(height: 12),
+                      TextFormField(
                         controller: _dataController,
                         keyboardType: TextInputType.number,
                         inputFormatters: [
                           MaskedInputFormatter('##/##/####'),
                         ],
-                        decoration: const InputDecoration(
+                        textInputAction: TextInputAction.done,
+                        decoration: InputDecoration(
                           labelText: 'Data (DD/MM/YYYY)',
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8)),
                         ),
+                        onFieldSubmitted: (_) => _registrarMovimentacao(),
                       ),
                       const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: _registrarMovimentacao,
-                        child: const Text('Registrar Movimentação'),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.save),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueAccent,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: _registrarMovimentacao,
+                          label: const Text(
+                            'Registrar Movimentação',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 12),
-                      Center(
-                        child: TextButton(
-                          onPressed: () => Navigator.popAndPushNamed(context, '/ProdutoDetalhesPage'),
-                          child: const Text(
-                            'Cancelar',
-                            style: TextStyle(color: Colors.blueAccent),
-                          ),
+                      TextButton(
+                        onPressed: () => Navigator.popAndPushNamed(
+                            context, '/ProdutoDetalhesPage'),
+                        child: const Text(
+                          'Cancelar',
+                          style: TextStyle(
+                              color: Colors.blueAccent,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],

@@ -26,52 +26,52 @@ class LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _loginUser() async {
-  final usuarioViewModel = Provider.of<UsuarioViewModel>(context, listen: false);
+    final usuarioViewModel =
+        Provider.of<UsuarioViewModel>(context, listen: false);
 
-  setState(() => _isLoading = true);
+    setState(() => _isLoading = true);
 
-  try {
-    final usuario = _usuarioController.text;
-    final senha = _senhaController.text;
+    try {
+      final usuario = _usuarioController.text;
+      final senha = _senhaController.text;
 
-    final userProfile = await usuarioViewModel.loginUser(usuario, senha);
+      final userProfile = await usuarioViewModel.loginUser(usuario, senha);
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (userProfile != null) {
-      // Redireciona para a página apropriada com base no perfil
-      if (userProfile.idperfil == 1) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePageAdmin()),
-        );
-      } else if (userProfile.idperfil == 2) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePageFuncionario()),
-        );
+      if (userProfile != null) {
+        // Redireciona para a página apropriada com base no perfil
+        if (userProfile.idperfil == 1) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePageAdmin()),
+          );
+        } else if (userProfile.idperfil == 2) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const HomePageFuncionario()),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Perfil desconhecido.')),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Perfil desconhecido.')),
+          const SnackBar(content: Text('Usuário ou senha incorretos.')),
         );
       }
-    } else {
+    } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Usuário ou senha incorretos.')),
+        SnackBar(content: Text('Erro ao fazer login: ${e.toString()}')),
       );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
-  } catch (e) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Erro ao fazer login: ${e.toString()}')),
-    );
-  } finally {
-    if (mounted) {
-      setState(() => _isLoading = false);
-    }
-  }
-
-
   }
 
   @override
@@ -84,10 +84,16 @@ class LoginPageState extends State<LoginPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const Icon(
+                Icons.inventory_2_rounded,
+                size: 80,
+                color: Colors.blueAccent,
+              ),
+              const SizedBox(height: 16),
               const Text(
-                'Bem-vindo!',
+                'Estoque, Limpeza e Copa',
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.blue,
                 ),
@@ -96,7 +102,10 @@ class LoginPageState extends State<LoginPage> {
               const SizedBox(height: 8),
               const Text(
                 'Faça login para continuar',
-                style: TextStyle(fontSize: 16, color: Colors.black54),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black54,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
@@ -119,10 +128,10 @@ class LoginPageState extends State<LoginPage> {
               _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : ElevatedButton(
-                      onPressed: () => _loginUser(),
+                      onPressed: _loginUser,
                       style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
                         padding: const EdgeInsets.symmetric(vertical: 14.0),
-                        backgroundColor: Colors.blue,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
@@ -130,10 +139,22 @@ class LoginPageState extends State<LoginPage> {
                       ),
                       child: const Text(
                         'Entrar',
-                        style: TextStyle(fontSize: 18),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () {
+                  // Adicione ação para redefinir senha ou suporte, se necessário.
+                },
+                child: const Text(
+                  'Esqueceu a senha?',
+                  style: TextStyle(color: Colors.blueAccent),
+                ),
+              ),
             ],
           ),
         ),
@@ -154,7 +175,8 @@ class LoginPageState extends State<LoginPage> {
       obscureText: obscureText,
       focusNode: focusNode,
       onSubmitted: onSubmitted,
-      textInputAction: obscureText ? TextInputAction.done : TextInputAction.next,
+      textInputAction:
+          obscureText ? TextInputAction.done : TextInputAction.next,
       decoration: InputDecoration(
         prefixIcon: Icon(icon, color: Colors.blue),
         labelText: label,

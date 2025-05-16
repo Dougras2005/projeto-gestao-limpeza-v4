@@ -4,6 +4,9 @@ import 'package:app_estoque_limpeza/data/repositories/usuario_repositories.dart'
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:app_estoque_limpeza/data/model/usuario_model.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_multi_formatter/formatters/formatter_utils.dart';
+import 'package:flutter_multi_formatter/formatters/phone_input_formatter.dart';
 
 class UsuariosPage extends StatefulWidget {
   const UsuariosPage({super.key});
@@ -138,14 +141,20 @@ class UsuariosPageState extends State<UsuariosPage> {
                 decoration: inputDecoration.copyWith(labelText: 'Telefone'),
                 keyboardType: TextInputType.phone,
                 style: const TextStyle(color: Colors.black),
+                inputFormatters: [
+                  PhoneInputFormatter(
+                    defaultCountryCode: 'BR',
+                    allowEndlessPhone: false,
+                  ),
+                  LengthLimitingTextInputFormatter(
+                      15), // Máximo com máscara formatada
+                ],
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
+                  final digits = toNumericString(value ?? '');
+                  if (digits.isEmpty) {
                     return 'O telefone é obrigatório';
                   }
-                  if (!RegExp(r'^\d+$').hasMatch(value)) {
-                    return 'Digite apenas números';
-                  }
-                  if (value.length < 10 || value.length > 11) {
+                  if (digits.length < 10 || digits.length > 11) {
                     return 'Informe um telefone válido com 10 ou 11 dígitos';
                   }
                   return null;

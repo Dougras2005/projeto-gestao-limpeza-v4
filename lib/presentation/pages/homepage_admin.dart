@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:app_estoque_limpeza/presentation/pages/users/movimentacao_page.dart';
+import 'package:app_estoque_limpeza/presentation/pages/movimentacao_page.dart';
 import 'package:flutter/material.dart';
 import 'package:app_estoque_limpeza/data/model/produto_model.dart';
 import 'package:app_estoque_limpeza/data/repositories/produto_repositories.dart';
@@ -8,7 +8,6 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
-
 
 class HomePageAdmin extends StatefulWidget {
   const HomePageAdmin({super.key});
@@ -107,84 +106,87 @@ class HomePageAdminState extends State<HomePageAdmin> {
   // }
 
   Future<void> exportProdutoToPdf() async {
-  try {
-    final resultado = await _produtoRepository.getProdutoAgrupado();
-    final pdf = pw.Document();
+    try {
+      final resultado = await _produtoRepository.getProdutoAgrupado();
+      final pdf = pw.Document();
 
-    final headers = [
-      'Código',
-      'Produto',
-      'Local',
-      'Total Entrada',
-      'Total Saída',
-      'Saldo',
-    ];
-
-    final data = resultado.map((item) {
-      return [
-        item['Codigo']?.toString() ?? '',
-        item['PRODUTO'] ?? '',
-        item['LOCAL'] ?? '',
-        item['TOTAL_ENTRADA']?.toString() ?? '0',
-        item['TOTAL_SAIDA']?.toString() ?? '0',
-        item['SALDO']?.toString() ?? '0',
+      final headers = [
+        'Código',
+        'Produto',
+        'Local',
+        'Total Entrada',
+        'Total Saída',
+        'Saldo',
       ];
-    }).toList();
 
-    pdf.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        build: (pw.Context context) => [
-          pw.Text(
-            'Relatório de Estoque',
-            style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold),
-          ),
-          pw.SizedBox(height: 16),
-          pw.TableHelper.fromTextArray(
-            headers: headers,
-            data: data,
-            headerAlignment: pw.Alignment.center,
-            headerStyle: pw.TextStyle(
-              fontWeight: pw.FontWeight.bold,
-              fontSize: 10,
+      final data = resultado.map((item) {
+        return [
+          item['Codigo']?.toString() ?? '',
+          item['PRODUTO'] ?? '',
+          item['LOCAL'] ?? '',
+          item['TOTAL_ENTRADA']?.toString() ?? '0',
+          item['TOTAL_SAIDA']?.toString() ?? '0',
+          item['SALDO']?.toString() ?? '0',
+        ];
+      }).toList();
+
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          build: (pw.Context context) => [
+            pw.Text(
+              'Relatório de Estoque',
+              style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold),
             ),
-            headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
-            cellStyle: const pw.TextStyle(fontSize: 9),
-            cellAlignment: pw.Alignment.center,
-            columnWidths: {
-              0: const pw.FlexColumnWidth(1.2),
-              1: const pw.FlexColumnWidth(2.5),
-              2: const pw.FlexColumnWidth(2),
-              3: const pw.FlexColumnWidth(1.5),
-              4: const pw.FlexColumnWidth(1.5),
-              5: const pw.FlexColumnWidth(1.5),
-            },
-            rowDecoration: const pw.BoxDecoration(), // usado para zebradas abaixo
-            cellAlignments: {
-              0: pw.Alignment.centerLeft,
-              1: pw.Alignment.centerLeft,
-              2: pw.Alignment.centerLeft,
-              3: pw.Alignment.centerRight,
-              4: pw.Alignment.centerRight,
-              5: pw.Alignment.centerRight,
-            },
-            // Linhas zebradas
-            oddRowDecoration: const pw.BoxDecoration(color: PdfColors.grey100),
-          ),
-        ],
-      ),
-    );
+            pw.SizedBox(height: 16),
+            pw.TableHelper.fromTextArray(
+              headers: headers,
+              data: data,
+              headerAlignment: pw.Alignment.center,
+              headerStyle: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                fontSize: 10,
+              ),
+              headerDecoration:
+                  const pw.BoxDecoration(color: PdfColors.grey300),
+              cellStyle: const pw.TextStyle(fontSize: 9),
+              cellAlignment: pw.Alignment.center,
+              columnWidths: {
+                0: const pw.FlexColumnWidth(1.2),
+                1: const pw.FlexColumnWidth(2.5),
+                2: const pw.FlexColumnWidth(2),
+                3: const pw.FlexColumnWidth(1.5),
+                4: const pw.FlexColumnWidth(1.5),
+                5: const pw.FlexColumnWidth(1.5),
+              },
+              rowDecoration:
+                  const pw.BoxDecoration(), // usado para zebradas abaixo
+              cellAlignments: {
+                0: pw.Alignment.centerLeft,
+                1: pw.Alignment.centerLeft,
+                2: pw.Alignment.centerLeft,
+                3: pw.Alignment.centerRight,
+                4: pw.Alignment.centerRight,
+                5: pw.Alignment.centerRight,
+              },
+              // Linhas zebradas
+              oddRowDecoration:
+                  const pw.BoxDecoration(color: PdfColors.grey100),
+            ),
+          ],
+        ),
+      );
 
-    final directory = await getApplicationDocumentsDirectory();
-    final filePath = '${directory.path}/relatorio_estoque.pdf';
-    final file = File(filePath);
-    await file.writeAsBytes(await pdf.save());
+      final directory = await getApplicationDocumentsDirectory();
+      final filePath = '${directory.path}/relatorio_estoque.pdf';
+      final file = File(filePath);
+      await file.writeAsBytes(await pdf.save());
 
-    await OpenFile.open(filePath);
-  } catch (e) {
-    throw Exception('Erro ao gerar o PDF: $e');
+      await OpenFile.open(filePath);
+    } catch (e) {
+      throw Exception('Erro ao gerar o PDF: $e');
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -202,81 +204,91 @@ class HomePageAdminState extends State<HomePageAdmin> {
         ],
       ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
+        child: Container(
+          color: Colors.white,
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              const DrawerHeader(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue, Colors.blueAccent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(Icons.menu, size: 36, color: Colors.white),
+                    SizedBox(width: 12),
+                    Text(
+                      'Menu Principal',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.add),
-              title: const Text('Cadastro de Produto'),
-              onTap: () {
-                Navigator.pushNamed(context, '/cadastroProduto');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.business),
-              title: const Text('Cadastro de Fornecedor'),
-              onTap: () {
-                Navigator.pushNamed(context, '/cadastroFornecedor');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.shopping_cart),
-              title: const Text('Lista de Produtos'),
-              onTap: () {
-                Navigator.pushNamed(context, '/ProdutoDetalhesPage');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.supervised_user_circle),
-              title: const Text('Cadastro de Usuários'),
-              onTap: () {
-                Navigator.pushNamed(context, '/cadastrodeusuario');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.picture_as_pdf),
-              title: const Text('Exportar PDF'),
-              onTap: () async {
-                final scaffoldMessenger = ScaffoldMessenger.of(context);
+              ListTile(
+                leading: const Icon(Icons.add, color: Colors.blueAccent),
+                title: const Text('Cadastro de Produto'),
+                onTap: () {
+                  Navigator.pushNamed(context, '/cadastroProduto');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.business, color: Colors.blueAccent),
+                title: const Text('Cadastro de Fornecedor'),
+                onTap: () {
+                  Navigator.pushNamed(context, '/cadastroFornecedor');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.supervised_user_circle,
+                    color: Colors.blueAccent),
+                title: const Text('Cadastro de Usuários'),
+                onTap: () {
+                  Navigator.pushNamed(context, '/cadastrodeusuario');
+                },
+              ),
+              ListTile(
+                leading:
+                    const Icon(Icons.picture_as_pdf, color: Colors.blueAccent),
+                title: const Text('Exportar PDF'),
+                onTap: () async {
+                  final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-                scaffoldMessenger.showSnackBar(
-                  const SnackBar(content: Text('Gerando PDF...')),
-                );
+                  scaffoldMessenger.showSnackBar(
+                    const SnackBar(content: Text('Gerando PDF...')),
+                  );
 
-                try {
-                  await exportProdutoToPdf();
-                  scaffoldMessenger.showSnackBar(
-                    const SnackBar(
-                        content: Text('PDF salvo e aberto com sucesso!')),
-                  );
-                } catch (e) {
-                  scaffoldMessenger.showSnackBar(
-                    SnackBar(content: Text('Erro ao exportar PDF: $e')),
-                  );
-                }
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.exit_to_app),
-              title: const Text('Sair'),
-              onTap: () {
-                Navigator.pushReplacementNamed(context, '/');
-              },
-            ),
-          ],
+                  try {
+                    await exportProdutoToPdf();
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(
+                          content: Text('PDF salvo e aberto com sucesso!')),
+                    );
+                  } catch (e) {
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(content: Text('Erro ao exportar PDF: $e')),
+                    );
+                  }
+                },
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.exit_to_app, color: Colors.redAccent),
+                title: const Text('Sair'),
+                onTap: () {
+                  Navigator.pushReplacementNamed(context, '/');
+                },
+              ),
+            ],
+          ),
         ),
       ),
       body: Padding(

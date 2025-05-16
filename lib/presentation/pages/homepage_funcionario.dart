@@ -55,34 +55,49 @@ class HomePageFuncionarioState extends State<HomePageFuncionario> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Produtos Cadastrados',
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         backgroundColor: Colors.blue,
       ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
+        child: Container(
+          color: Colors.white,
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              const DrawerHeader(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue, Colors.blueAccent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(Icons.inventory, size: 40, color: Colors.white),
+                    SizedBox(width: 12),
+                    Text(
+                      'Estoque Limpeza',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.exit_to_app),
-              title: const Text('Sair'),
-              onTap: () {
-                Navigator.pushReplacementNamed(context, '/');
-              },
-            ),
-          ],
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.exit_to_app, color: Colors.redAccent),
+                title: const Text('Sair'),
+                onTap: () {
+                  Navigator.pushReplacementNamed(context, '/');
+                },
+              ),
+            ],
+          ),
         ),
       ),
       body: Padding(
@@ -131,12 +146,12 @@ class HomePageFuncionarioState extends State<HomePageFuncionario> {
 
   // Função para mostrar detalhes do produto
   void _showProdutoDetails(ProdutoModel produto) {
-  Navigator.pop(context);
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => ProdutoDetalhesPageFun(produto: produto),
-    ),
-  );
-}
+    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProdutoDetalhesPageFun(produto: produto),
+      ),
+    );
+  }
 }
