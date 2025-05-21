@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:app_estoque_limpeza/data/model/produto_model.dart';
-import 'package:app_estoque_limpeza/data/repositories/produto_repositories.dart';
+import 'package:app_estoque_limpeza/data/repositories/produto_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';

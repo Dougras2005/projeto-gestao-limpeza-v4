@@ -1,5 +1,5 @@
 import 'package:app_estoque_limpeza/data/model/telefone_model.dart';
-import 'package:app_estoque_limpeza/data/repositories/telefone_repositories.dart';
+import 'package:app_estoque_limpeza/data/repositories/telefone_repository.dart';
 
 class TelefoneViewModel {
   final TelefoneRepository repository;

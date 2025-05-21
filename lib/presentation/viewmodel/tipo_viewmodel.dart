@@ -1,5 +1,5 @@
 import 'package:app_estoque_limpeza/data/model/tipo_model.dart';
-import 'package:app_estoque_limpeza/data/repositories/tipo_repositories.dart';
+import 'package:app_estoque_limpeza/data/repositories/tipo_repository.dart';
 
 class TipoViewModel {
   final TipoRepository repository;

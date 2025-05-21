@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:app_estoque_limpeza/data/repositories/usuario_repositories.dart';
+import 'package:app_estoque_limpeza/data/repositories/usuario_repository.dart';
 import 'package:app_estoque_limpeza/data/model/usuario_model.dart';
 
 class UsuarioViewModel with ChangeNotifier {

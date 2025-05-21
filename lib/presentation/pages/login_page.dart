@@ -146,15 +146,6 @@ class LoginPageState extends State<LoginPage> {
                       ),
                     ),
               const SizedBox(height: 12),
-              TextButton(
-                onPressed: () {
-                  // Adicione ação para redefinir senha ou suporte, se necessário.
-                },
-                child: const Text(
-                  'Esqueceu a senha?',
-                  style: TextStyle(color: Colors.blueAccent),
-                ),
-              ),
             ],
           ),
         ),

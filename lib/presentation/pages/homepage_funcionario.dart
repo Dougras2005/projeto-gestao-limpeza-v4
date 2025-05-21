@@ -1,7 +1,7 @@
 import 'package:app_estoque_limpeza/presentation/pages/users/movimentacao_page_user.dart';
 import 'package:flutter/material.dart';
 import 'package:app_estoque_limpeza/data/model/produto_model.dart';
-import 'package:app_estoque_limpeza/data/repositories/produto_repositories.dart';
+import 'package:app_estoque_limpeza/data/repositories/produto_repository.dart';
 
 class HomePageFuncionario extends StatefulWidget {
   const HomePageFuncionario({super.key});

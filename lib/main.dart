@@ -1,11 +1,13 @@
-import 'package:app_estoque_limpeza/data/repositories/usuario_repositories.dart';
+import 'package:app_estoque_limpeza/data/repositories/usuario_repository.dart';
 import 'package:app_estoque_limpeza/presentation/pages/fornecedor_page.dart';
+import 'package:app_estoque_limpeza/presentation/pages/historico_page.dart';
 import 'package:app_estoque_limpeza/presentation/pages/homepage_admin.dart';
 import 'package:app_estoque_limpeza/presentation/pages/homepage_funcionario.dart';
 import 'package:app_estoque_limpeza/presentation/pages/produto_page.dart';
 import 'package:app_estoque_limpeza/presentation/pages/login_page.dart';
 import 'package:app_estoque_limpeza/presentation/pages/usuarios_page.dart';
 import 'package:app_estoque_limpeza/presentation/viewmodel/usuario_viewmodel.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -32,14 +34,22 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      locale: const Locale('pt', 'BR'),
+      supportedLocales: const [Locale('pt', 'BR')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       initialRoute: '/', // Definir a rota inicial como string
       routes: {
         '/': (context) => const LoginPage(), // Corrigir a referência da rota inicial
         '/cadastroProduto': (context) => const ProdutosPage(),
         '/cadastroFornecedor': (context) => const FornecedorPage(),
-        '/cadastrodeusuario': (context) => const UsuariosPage(),
+        '/cadastrodeusuario': (context) => const UsuarioPage(),
         '/ProdutoDetalhesPage':(context) => const HomePageAdmin(),
         '/HomePageFuncionario':(context) => const HomePageFuncionario(),
+        '/Historico':(context) => const MovimentacaoDetalhadaPage(),
       },
     );
   }

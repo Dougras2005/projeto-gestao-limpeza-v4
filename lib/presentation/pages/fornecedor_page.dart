@@ -99,20 +99,40 @@ class FornecedorState extends State<FornecedorPage> with SingleTickerProviderSta
   }
 
   Future<void> _excluirFornecedor(int id) async {
-    try {
-      await _fornecedorRepository.deleteFornecedor(id);
-      await _carregarFornecedores();
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Fornecedor excluído com sucesso!')),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao excluir fornecedor: $e')),
-      );
-    }
+  try {
+    // Obter o fornecedor antes de excluir para poder restaurar depois
+    final fornecedorExcluido = _fornecedores.firstWhere((f) => f.idfornecedor == id);
+
+    await _fornecedorRepository.deleteFornecedor(id);
+    await _carregarFornecedores();
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Fornecedor excluído com sucesso!'),
+        action: SnackBarAction(
+          label: 'Desfazer',
+          textColor: Colors.yellow,
+          onPressed: () async {
+            await _fornecedorRepository.insertFornecedor(fornecedorExcluido);
+            await _carregarFornecedores();
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Exclusão desfeita!')),
+            );
+          },
+        ),
+        duration: const Duration(seconds: 5),
+      ),
+    );
+  } catch (e) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Erro ao excluir fornecedor: $e')),
+    );
   }
+}
+
 
   void _editarFornecedor(Fornecedor fornecedor) {
     setState(() {

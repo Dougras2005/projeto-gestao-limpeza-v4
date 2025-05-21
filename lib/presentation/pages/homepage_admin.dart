@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:app_estoque_limpeza/presentation/pages/movimentacao_page.dart';
 import 'package:flutter/material.dart';
 import 'package:app_estoque_limpeza/data/model/produto_model.dart';
-import 'package:app_estoque_limpeza/data/repositories/produto_repositories.dart';
+import 'package:app_estoque_limpeza/data/repositories/produto_repository.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
@@ -45,26 +45,7 @@ class HomePageAdminState extends State<HomePageAdmin> {
         _produtosFiltrados = produtos; // Inicialmente, exibe todos
       });
 
-      // Print formatado para visualização dos produtos
-      //   print('══════════════════ LISTA DE PRODUTOS ══════════════════');
-      //   for (var i = 0; i < produtos.length; i++) {
-      //     final produto = produtos[i];
-      //     print('➤ Produto ${i + 1}:');
-      //     print('   ID: ${produto.idMaterial}');
-      //     print('   Código: ${produto.codigo}');
-      //     print('   Nome: ${produto.nome}');
-      //     print('   Quantidade: ${produto.quantidade}');
-      //     print('   Validade: ${produto.validade ?? "N/A"}');
-      //     print('   Local: ${produto.local}');
-      //     print('   Tipo ID: ${produto.idtipo}');
-      //     print('   Tipo: ${produto.tipoProduto ?? "N/A"}');
-      //     print('   Fornecedor ID: ${produto.idfornecedor}');
-      //     print('   Fornecedor: ${produto.nomeFornecedor ?? "N/A"}');
-      //     print('   Entrada: ${produto.entrada}');
-      //     print('──────────────────────────────────────────────');
-      //   }
-      //   print('Total de produtos: ${produtos.length}');
-      //   print('════════════════════════════════════════════════');
+  
     }
   }
 
@@ -91,19 +72,6 @@ class HomePageAdminState extends State<HomePageAdmin> {
       }
     });
   }
-
-  // Método para filtrar produtos com baixo estoque
-  // void _filtrarProdutosValidade() {
-  //   setState(() {
-  //     if (_filtroAtivo) {
-  //       _produtosFiltrados = _produtos; // Retorna à lista completa
-  //       _filtroAtivo = false;
-  //     } else {
-  //       _produtosFiltrados = _produtos.where((produto) => produto.validade <= 5).toList();
-  //       _filtroAtivo = true;
-  //     }
-  //   });
-  // }
 
   Future<void> exportProdutoToPdf() async {
     try {
@@ -256,6 +224,14 @@ class HomePageAdminState extends State<HomePageAdmin> {
                 },
               ),
               ListTile(
+                    leading: const Icon(Icons.history_outlined,
+                        color: Colors.blueAccent),
+                    title: const Text('histórico das movimentações'),
+                    onTap: () {
+                      Navigator.pushNamed(context, '/Historico');
+                    },
+                  ),
+              ListTile(
                 leading:
                     const Icon(Icons.picture_as_pdf, color: Colors.blueAccent),
                 title: const Text('Exportar PDF'),
@@ -265,6 +241,7 @@ class HomePageAdminState extends State<HomePageAdmin> {
                   scaffoldMessenger.showSnackBar(
                     const SnackBar(content: Text('Gerando PDF...')),
                   );
+                  
 
                   try {
                     await exportProdutoToPdf();

@@ -1,5 +1,5 @@
 import 'package:app_estoque_limpeza/data/model/movimentacao_model.dart';
-import 'package:app_estoque_limpeza/data/repositories/movimentacao_repositories.dart';
+import 'package:app_estoque_limpeza/data/repositories/movimentacao_repository.dart';
 
 class MovimentacaoViewModel {
   final MovimentacaoRepository repository;

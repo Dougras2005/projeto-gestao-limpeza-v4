@@ -1,7 +1,7 @@
 import 'package:app_estoque_limpeza/data/model/produto_model.dart';
 import 'package:app_estoque_limpeza/data/repositories/fornecedor_repository.dart';
-import 'package:app_estoque_limpeza/data/repositories/produto_repositories.dart';
-import 'package:app_estoque_limpeza/data/repositories/tipo_repositories.dart';
+import 'package:app_estoque_limpeza/data/repositories/produto_repository.dart';
+import 'package:app_estoque_limpeza/data/repositories/tipo_repository.dart';
 import 'package:app_estoque_limpeza/presentation/pages/homepage_admin.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';

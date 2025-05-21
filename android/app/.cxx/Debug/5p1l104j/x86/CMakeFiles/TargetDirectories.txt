@@ -1,0 +1,2 @@
+C:/Users/Suporte/Documents/projeto-gestao-limpeza-3-main/android/app/.cxx/Debug/5p1l104j/x86/CMakeFiles/edit_cache.dir
+C:/Users/Suporte/Documents/projeto-gestao-limpeza-3-main/android/app/.cxx/Debug/5p1l104j/x86/CMakeFiles/rebuild_cache.dir

@@ -1,4 +1,5 @@
 import 'package:app_estoque_limpeza/core/database_helper.dart';
+import 'package:app_estoque_limpeza/data/model/historico_model.dart';
 import 'package:app_estoque_limpeza/data/model/movimentacao_model.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -29,6 +30,37 @@ class MovimentacaoRepository {
       );
     }).toList();
   }
+
+  Future<List<HistoricoModel>> getHistoricoDetalhado() async {
+  final db = await DatabaseHelper.initDb();
+
+  final List<Map<String, Object?>> results = await db.rawQuery('''
+    SELECT
+      u.matricula,
+      u.nome,
+      u.telefone,
+      m.saida_data,
+      m.saida,
+      p.Nome AS produto,
+      p.Quantidade AS saldo
+    FROM movimentacao m
+    JOIN usuario u ON u.idusuario = m.idusuario
+    JOIN produto p ON p.idproduto = m.idmaterial
+  ''');
+
+  return results.map((map) {
+    return HistoricoModel(
+      matricula: map['matricula'] as String,
+      nome: map['nome'] as String,
+      telefone: map['telefone'] as String,
+      saidaData: map['saida_data'] as String,
+      saida: map['saida'] as int,
+      produto: map['produto'] as String,
+      saldo: map['saldo'] as int,
+    );
+  }).toList();
+}
+
 
   Future<void> updateMovimentacao(Movimentacao movimentacao) async {
     final db = await DatabaseHelper.initDb();

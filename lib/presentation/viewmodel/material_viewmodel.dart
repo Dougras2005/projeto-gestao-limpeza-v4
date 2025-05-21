@@ -1,4 +1,4 @@
-import 'package:app_estoque_limpeza/data/repositories/material_repositories.dart';
+import 'package:app_estoque_limpeza/data/repositories/material_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:app_estoque_limpeza/data/model/material_model.dart'
     as app_model;
