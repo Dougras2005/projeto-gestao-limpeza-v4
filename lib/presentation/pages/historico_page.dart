@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-
 import 'package:app_estoque_limpeza/core/database_helper.dart';
 import 'package:app_estoque_limpeza/data/model/historico_model.dart';
 
@@ -54,9 +52,9 @@ class _MovimentacaoDetalhadaPageState extends State<MovimentacaoDetalhadaPage> {
         nome: map['nome'] as String,
         telefone: map['telefone'] as String,
         saidaData: map['saida_data'] as String,
-        saida: map['saida'] as int,
+        saida: (map['saida'] as int?) ?? 0,
         produto: map['produto'] as String,
-        saldo: map['saldo'] as int,
+        saldo: (map['saldo'] as int?) ?? 0,
       );
     }).toList();
   }
@@ -76,10 +74,13 @@ class _MovimentacaoDetalhadaPageState extends State<MovimentacaoDetalhadaPage> {
         _dataSelecionada = picked;
         _movimentacoesFuture = Future.value(
           _movimentacoes.where((mov) {
-            final data = DateTime.tryParse(mov.saidaData);
-            if (data == null) return false;
-            return data.isAfter(picked.start.subtract(const Duration(days: 1))) &&
-                   data.isBefore(picked.end.add(const Duration(days: 1)));
+            try {
+              final data = DateFormat('yyyy-MM-dd').parse(mov.saidaData);
+              return data.isAfter(picked.start.subtract(const Duration(days: 1))) &&
+                     data.isBefore(picked.end.add(const Duration(days: 1)));
+            } catch (_) {
+              return false;
+            }
           }).toList(),
         );
       });
@@ -95,7 +96,7 @@ class _MovimentacaoDetalhadaPageState extends State<MovimentacaoDetalhadaPage> {
 
   @override
   Widget build(BuildContext context) {
-    final DateFormat dateFormatter = DateFormat('dd/MM/yyyy', 'pt_BR');
+   // final DateFormat dateFormatter = DateFormat('dd/MM/yyyy', 'pt_BR');
 
     return Scaffold(
       appBar: AppBar(
@@ -137,7 +138,15 @@ class _MovimentacaoDetalhadaPageState extends State<MovimentacaoDetalhadaPage> {
             itemCount: movimentacoes.length,
             itemBuilder: (context, index) {
               final mov = movimentacoes[index];
-              final dataFormatada = dateFormatter.format(DateTime.parse(mov.saidaData));
+
+              String dataFormatada;
+              try {
+               // final data = DateFormat('yyyy-MM-dd').parse(mov.saidaData);
+                //dataFormatada = dateFormatter.format(data);
+                dataFormatada = mov.saidaData.toString();
+              } catch (_) {
+                dataFormatada = 'Data inválida';
+              }
 
               return Card(
                 elevation: 4,
