@@ -15,6 +15,7 @@ class _MovimentacaoDetalhadaPageState extends State<MovimentacaoDetalhadaPage> {
   List<HistoricoModel> _movimentacoes = [];
 
   DateTimeRange? _dataSelecionada;
+  final DateFormat formatoDataBanco = DateFormat('dd/MM/yyyy', 'pt_BR');
 
   @override
   void initState() {
@@ -44,6 +45,8 @@ class _MovimentacaoDetalhadaPageState extends State<MovimentacaoDetalhadaPage> {
       FROM movimentacao m
       JOIN usuario u ON u.idusuario = m.idusuario
       JOIN produto p ON p.idproduto = m.idmaterial
+      WHERE saida_data <> ''
+      ORDER BY m.saida_data
     ''');
 
     return results.map((map) {
@@ -75,7 +78,7 @@ class _MovimentacaoDetalhadaPageState extends State<MovimentacaoDetalhadaPage> {
         _movimentacoesFuture = Future.value(
           _movimentacoes.where((mov) {
             try {
-              final data = DateFormat('yyyy-MM-dd').parse(mov.saidaData);
+              final data = formatoDataBanco.parse(mov.saidaData);
               return data.isAfter(picked.start.subtract(const Duration(days: 1))) &&
                      data.isBefore(picked.end.add(const Duration(days: 1)));
             } catch (_) {
@@ -96,8 +99,6 @@ class _MovimentacaoDetalhadaPageState extends State<MovimentacaoDetalhadaPage> {
 
   @override
   Widget build(BuildContext context) {
-   // final DateFormat dateFormatter = DateFormat('dd/MM/yyyy', 'pt_BR');
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Histórico de Movimentações'),
@@ -141,9 +142,8 @@ class _MovimentacaoDetalhadaPageState extends State<MovimentacaoDetalhadaPage> {
 
               String dataFormatada;
               try {
-               // final data = DateFormat('yyyy-MM-dd').parse(mov.saidaData);
-                //dataFormatada = dateFormatter.format(data);
-                dataFormatada = mov.saidaData.toString();
+                final data = formatoDataBanco.parse(mov.saidaData);
+                dataFormatada = formatoDataBanco.format(data);
               } catch (_) {
                 dataFormatada = 'Data inválida';
               }
