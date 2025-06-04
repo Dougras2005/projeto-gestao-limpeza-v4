@@ -29,7 +29,7 @@ class ProdutosState extends State<ProdutosPage> {
   List<String> _fornecedores = [];
   List<String> _tipos = [];
 
-  final ProdutoRepositories _materialRepository = ProdutoRepositories();
+  final ProdutoRepository _produtoRepository = ProdutoRepository();
   final TipoRepository _tipoRepository = TipoRepository();
   final FornecedorRepository _fornecedorRepository = FornecedorRepository();
 
@@ -87,9 +87,9 @@ class ProdutosState extends State<ProdutosPage> {
     }
   }
 
-  Future<void> _cadastrarMaterial() async {
+  Future<void> _cadastroProduto() async {
     if (_formKey.currentState?.validate() ?? false) {
-      try {
+      // try {
         if (_tipo == null || _tipo!.isEmpty) {
           throw Exception('O tipo do produto não pode ser nulo.');
         }
@@ -98,25 +98,29 @@ class ProdutosState extends State<ProdutosPage> {
         }
 
         final idTipo = await _tipoRepository.getIdByTipo(_tipo!);
-        final idFornecedor = await _fornecedorRepository.getIdByForenecedor(_fornecedor!);
+        final idFornecedor = await _fornecedorRepository.getIdByFornecedor(_fornecedor!);
 
-        final material = ProdutoModel(
-          idMaterial: null,
-          codigo: _codigoController.text,
-          nome: _nomeController.text,
-          quantidade: int.parse(_quantidadeController.text),
-          validade: _vencimentoController.text.isNotEmpty ? _vencimentoController.text : null,
-          local: _localController.text,
-          idtipo: idTipo!,
-          idfornecedor: idFornecedor!,
-          entrada: _dataEntradaController.text,
-        );
+        final produto = ProdutoModel(
+  codigo: _codigoController.text,
+  nome: _nomeController.text,
+  quantidade: int.parse(_quantidadeController.text),
+  validade: _vencimentoController.text.isNotEmpty
+      ? DateFormat('yyyy-MM-dd').format(DateFormat('dd/MM/yyyy').parse(_vencimentoController.text))
+      : null,
+  local: _localController.text,
+  idtipo: idTipo!,
+  idfornecedor: idFornecedor!,
+  entrada: _dataEntradaController.text.isNotEmpty
+      ? DateFormat('yyyy-MM-dd').format(DateFormat('dd/MM/yyyy').parse(_vencimentoController.text))
+      : '',
+);
 
-        await _materialRepository.insertProduto(material);
+
+        await _produtoRepository.insertProduto(produto);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Material cadastrado com sucesso!')),
+            const SnackBar(content: Text('Produto cadastrado com sucesso!')),
           );
 
           _codigoController.clear();
@@ -138,14 +142,14 @@ class ProdutosState extends State<ProdutosPage> {
             (Route<dynamic> route) => false,
           );
         }
-      } catch (e, stackTrace) {
-        debugPrint('Erro: $e\n$stackTrace');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erro ao cadastrar material: $e')),
-          );
-        }
-      }
+      // // } catch (e, stackTrace) {
+      //   debugPrint('Erro: $e\n$stackTrace');
+      //   if (mounted) {
+      //     ScaffoldMessenger.of(context).showSnackBar(
+      //       SnackBar(content: Text('Erro ao cadastrar material: $e')),
+      //     );
+      //   }
+      // }
     }
   }
 
@@ -343,7 +347,7 @@ class ProdutosState extends State<ProdutosPage> {
                 const SizedBox(height: 32),
                 Center(
                   child: ElevatedButton(
-                    onPressed: _cadastrarMaterial,
+                    onPressed: _cadastroProduto,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       padding: const EdgeInsets.symmetric(

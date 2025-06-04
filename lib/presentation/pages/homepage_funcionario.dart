@@ -1,7 +1,8 @@
-import 'package:app_estoque_limpeza/presentation/pages/users/movimentacao_page_user.dart';
-import 'package:flutter/material.dart';
 import 'package:app_estoque_limpeza/data/model/produto_model.dart';
 import 'package:app_estoque_limpeza/data/repositories/produto_repository.dart';
+import 'package:app_estoque_limpeza/presentation/pages/movimentacao_page.dart';
+import 'package:flutter/material.dart';
+
 
 class HomePageFuncionario extends StatefulWidget {
   const HomePageFuncionario({super.key});
@@ -11,7 +12,7 @@ class HomePageFuncionario extends StatefulWidget {
 }
 
 class HomePageFuncionarioState extends State<HomePageFuncionario> {
-  final ProdutoRepositories _produtoRepository = ProdutoRepositories();
+  final ProdutoRepository _produtoRepository = ProdutoRepository();
   final TextEditingController _searchController = TextEditingController();
   List<ProdutoModel> _produtos = [];
   List<ProdutoModel> _produtosFiltrados = [];
@@ -150,7 +151,7 @@ class HomePageFuncionarioState extends State<HomePageFuncionario> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ProdutoDetalhesPageFun(produto: produto),
+        builder: (context) => ProdutoDetalhesPage(produto: produto),
       ),
     );
   }

@@ -1,85 +1,80 @@
-import 'package:app_estoque_limpeza/core/database_helper.dart';
-import 'package:app_estoque_limpeza/data/model/historico_model.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:app_estoque_limpeza/data/model/movimentacao_model.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:app_estoque_limpeza/data/model/historico_model.dart';
 
 class MovimentacaoRepository {
+  final SupabaseClient _client = Supabase.instance.client;
+
+  // INSERT
   Future<void> insertMovimentacao(Movimentacao movimentacao) async {
-    final db = await DatabaseHelper.initDb();
-    await db.insert(
-      'movimentacao',
-      movimentacao.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    try {
+      await _client.from('movimentacao').insert(movimentacao.toMap());
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao inserir movimentação: ${e.message}');
+    }
   }
 
+  // SELECT ALL
   Future<List<Movimentacao>> getMovimentacoes() async {
-    final db = await DatabaseHelper.initDb();
-    final List<Map<String, Object?>> movimentacaoMaps =
-        await db.query('movimentacao');
-
-    return movimentacaoMaps.map((map) {
-      return Movimentacao(
-        idmovimentacao: map['idmovimentacao'] as int?,
-        entradaData: map['entrada_data'] as String,
-        saidaData: map['saida_data'] as String,
-        entrada: map['entrada'] != null ? map['entrada'] as int : null,
-        saida: map['saida'] != null ? map['saida'] as int : null,
-        idproduto: map['idmaterial'] as int,
-        idusuario: map['idusuario'] as int,
-      );
-    }).toList();
+    try {
+      final List<dynamic> data = await _client.from('movimentacao').select();
+      return data
+          .map((map) => Movimentacao.fromMap(map as Map<String, dynamic>))
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao buscar movimentações: ${e.message}');
+    }
   }
 
+  // JOIN COM HISTÓRICO DETALHADO
   Future<List<HistoricoModel>> getHistoricoDetalhado() async {
-  final db = await DatabaseHelper.initDb();
+    try {
+      final List<dynamic> data = await _client
+          .from('movimentacao')
+          .select('''
+            saida_data,
+            saida,
+            usuario:usuario_id (matricula, nome, telefone),
+            produto:idproduto (nome, quantidade)
+          ''');
 
-  final List<Map<String, Object?>> results = await db.rawQuery('''
-    SELECT
-      u.matricula,
-      u.nome,
-      u.telefone,
-      m.saida_data,
-      m.saida,
-      p.Nome AS produto,
-      p.Quantidade AS saldo
-    FROM movimentacao m
-    JOIN usuario u ON u.idusuario = m.idusuario
-    JOIN produto p ON p.idproduto = m.idmaterial
-  ''');
+      return data.map((map) {
+        final usuario = map['usuario'] as Map<String, dynamic>;
+        final produto = map['produto'] as Map<String, dynamic>;
 
-  return results.map((map) {
-    return HistoricoModel(
-      matricula: map['matricula'] as String,
-      nome: map['nome'] as String,
-      telefone: map['telefone'] as String,
-      saidaData: map['saida_data'] as String,
-      saida: map['saida'] as int,
-      produto: map['produto'] as String,
-      saldo: map['saldo'] as int,
-    );
-  }).toList();
-}
+        return HistoricoModel(
+          matricula: usuario['matricula'] as String,
+          nome: usuario['nome'] as String,
+          telefone: usuario['telefone'] as String,
+          saidaData: map['saida_data'] as String,
+          saida: map['saida'] as int,
+          produto: produto['nome'] as String,
+          saldo: produto['quantidade'] as int,
+        );
+      }).toList();
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao buscar histórico: ${e.message}');
+    }
+  }
 
-
+  // UPDATE
   Future<void> updateMovimentacao(Movimentacao movimentacao) async {
-    final db = await DatabaseHelper.initDb();
-    await db.update(
-      'movimentacao',
-      movimentacao.toMap(),
-      where: 'idmovimentacao = ?',
-      whereArgs: [movimentacao.idmovimentacao],
-    );
+    try {
+      await _client
+          .from('movimentacao')
+          .update(movimentacao.toMap())
+          .eq('idmovimentacao', movimentacao.idmovimentacao!);
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao atualizar movimentação: ${e.message}');
+    }
   }
 
+  // DELETE
   Future<void> deleteMovimentacao(int id) async {
-    final db = await DatabaseHelper.initDb();
-    await db.delete(
-      'movimentacao',
-      where: 'idmovimentacao = ?',
-      whereArgs: [id],
-    );
+    try {
+      await _client.from('movimentacao').delete().eq('idmovimentacao', id);
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao excluir movimentação: ${e.message}');
+    }
   }
-
-
 }

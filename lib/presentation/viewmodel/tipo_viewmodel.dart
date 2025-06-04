@@ -6,19 +6,19 @@ class TipoViewModel {
 
   TipoViewModel(this.repository);
 
-  Future<void> addTipo(Tipo tipo) async {
-    await repository.insertTipo(tipo);
-  }
+  // Future<void> addTipo(Tipo tipo) async {
+  //   await repository.insertTipo(tipo);
+  // }
 
   Future<List<Tipo>> getTipos() async {
     return await repository.getTipos();
   }
 
-  Future<void> updateTipo(Tipo tipo) async {
-    await repository.updateTipo(tipo);
-  }
+//   Future<void> updateTipo(Tipo tipo) async {
+//     await repository.updateTipo(tipo);
+//   }
 
-  Future<void> deleteTipo(int? id) async {
-    await repository.deleteTipo(id!);
-  }
+//   Future<void> deleteTipo(int? id) async {
+//     await repository.deleteTipo(id!);
+//   }
 }

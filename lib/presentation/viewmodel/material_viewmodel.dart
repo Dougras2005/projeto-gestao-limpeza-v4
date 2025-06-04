@@ -1,13 +1,13 @@
-import 'package:app_estoque_limpeza/data/repositories/material_repository.dart';
+import 'package:app_estoque_limpeza/data/model/produto_model.dart';
+import 'package:app_estoque_limpeza/data/repositories/produto_repository.dart';
 import 'package:flutter/material.dart';
-import 'package:app_estoque_limpeza/data/model/material_model.dart'
-    as app_model;
 
-class MaterialViewModel extends ChangeNotifier {
-  final MaterialRepository _repository = MaterialRepository();
 
-  List<app_model.Material> _materiais = [];
-  List<app_model.Material> get materiais => _materiais;
+class ProdutoViewModel extends ChangeNotifier {
+  final ProdutoRepository _repository = ProdutoRepository();
+
+  List<ProdutoModel> _produtos = [];
+  List<ProdutoModel> get materiais => _produtos;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -20,7 +20,7 @@ class MaterialViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _materiais = await _repository.getMateriais();
+      _produtos = await _repository.getProduto();
       _errorMessage = null;
     } catch (error) {
       _errorMessage = 'Erro ao buscar materiais: $error';
@@ -30,36 +30,36 @@ class MaterialViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> addMaterial(app_model.Material material) async {
+  Future<void> addProduto(ProdutoModel produto) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      await _repository.insertMaterial(material);
-      _materiais.add(material);
+      await _repository.insertProduto(produto);
+      _produtos.add(produto);
       _errorMessage = null;
     } catch (error) {
-      _errorMessage = 'Erro ao adicionar material: $error';
+      _errorMessage = 'Erro ao adicionar produto: $error';
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> updateMaterial(app_model.Material material) async {
+  Future<void> updateMaterial(ProdutoModel produto) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      await _repository.updateMaterial(material);
+      await _repository.updateProduto(produto);
       final index =
-          _materiais.indexWhere((m) => m.idMaterial == material.idMaterial);
+          _produtos.indexWhere((m) => m.idproduto == produto.idproduto);
       if (index != -1) {
-        _materiais[index] = material;
+        _produtos[index] = produto;
       }
       _errorMessage = null;
     } catch (error) {
-      _errorMessage = 'Erro ao atualizar material: $error';
+      _errorMessage = 'Erro ao atualizar produto: $error';
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -71,11 +71,11 @@ class MaterialViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _repository.deleteMaterial(id);
-      _materiais.removeWhere((m) => m.idMaterial == id);
+      await _repository.deleteProduto(id);
+      _produtos.removeWhere((m) => m.idproduto == id);
       _errorMessage = null;
     } catch (error) {
-      _errorMessage = 'Erro ao excluir material: $error';
+      _errorMessage = 'Erro ao excluir produto: $error';
     } finally {
       _isLoading = false;
       notifyListeners();

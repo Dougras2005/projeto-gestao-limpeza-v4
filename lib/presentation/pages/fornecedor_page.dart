@@ -61,7 +61,7 @@ class FornecedorState extends State<FornecedorPage> with SingleTickerProviderSta
     if (_formKey.currentState?.validate() ?? false) {
       try {
         final fornecedor = Fornecedor(
-          idfornecedor: _fornecedorEmEdicaoId,
+          // idfornecedor: _fornecedorEmEdicaoId,
           nome: _nomeController.text,
           endereco: _enderecoController.text,
           telefone: _telefoneController.text,

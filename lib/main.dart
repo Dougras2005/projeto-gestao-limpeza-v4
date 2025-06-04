@@ -1,28 +1,33 @@
+import 'package:app_estoque_limpeza/api/database_helper.dart';
+import 'package:app_estoque_limpeza/presentation/pages/movimentacao_page.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+// ignore: depend_on_referenced_packages
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:app_estoque_limpeza/data/repositories/usuario_repository.dart';
 import 'package:app_estoque_limpeza/presentation/pages/fornecedor_page.dart';
 import 'package:app_estoque_limpeza/presentation/pages/historico_page.dart';
 import 'package:app_estoque_limpeza/presentation/pages/homepage_admin.dart';
 import 'package:app_estoque_limpeza/presentation/pages/homepage_funcionario.dart';
 import 'package:app_estoque_limpeza/presentation/pages/produto_page.dart';
-import 'package:app_estoque_limpeza/presentation/pages/login_page.dart';
-import 'package:app_estoque_limpeza/presentation/pages/usuarios_page.dart';
-import 'package:app_estoque_limpeza/presentation/viewmodel/usuario_viewmodel.dart';
 
-void main() {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (context) => UsuarioViewModel(UsuarioRepository()),
+import 'package:app_estoque_limpeza/presentation/pages/usuarios_page.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    await SupabaseHelper.initialize();
+    runApp(const MyApp());
+  } catch (e) {
+    runApp(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Text('Erro ao conectar com o banco de dados: $e'),
+          ),
         ),
-        // Adicione outros providers aqui, se necessário
-      ],
-      child: const MyApp(),
-    ),
-  );
+      ),
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -47,7 +52,7 @@ class MyApp extends StatelessWidget {
       ],
       initialRoute: '/',
       routes: {
-        '/': (context) => const LoginPage(),
+        '/': (context) => const HomePageAdmin(),
         '/cadastroProduto': (context) => const ProdutosPage(),
         '/cadastroFornecedor': (context) => const FornecedorPage(),
         '/cadastrodeusuario': (context) => const UsuarioPage(),

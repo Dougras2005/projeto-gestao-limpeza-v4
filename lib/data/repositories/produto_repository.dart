@@ -1,134 +1,48 @@
-import 'package:app_estoque_limpeza/core/database_helper.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:app_estoque_limpeza/data/model/produto_model.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-class ProdutoRepositories {
+class ProdutoRepository {
+  final SupabaseClient _client = Supabase.instance.client;
+
+  // INSERT
   Future<void> insertProduto(ProdutoModel produto) async {
-    final db = await DatabaseHelper.initDb();
-    
-    // Cria um novo map sem os campos de relacionamento
-    final Map<String, dynamic> dadosParaInserir = {
-      'Codigo': produto.codigo,
-      'Nome': produto.nome,
-      'Quantidade': produto.quantidade,
-      'Validade': produto.validade,
-      'Local': produto.local,
-      'idtipo': produto.idtipo,
-      'idfornecedor': produto.idfornecedor,
-      'entrada': produto.entrada,
-    };
-    
-    await db.insert(
-      'Produto',
-      dadosParaInserir,
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
-
-  Future<List<ProdutoModel>> getProduto({
-    int? quantidadeMinima, 
-    String? dataVencimentoMinima
-  }) async {
-    final db = await DatabaseHelper.initDb();
-    
-    String whereClause = '';
-    List<dynamic> whereArgs = [];
-    
-    if (quantidadeMinima != null) {
-      whereClause += 'p.Quantidade >= ?';
-      whereArgs.add(quantidadeMinima);
-    }
-    
-    if (dataVencimentoMinima != null) {
-      if (whereClause.isNotEmpty) {
-        whereClause += ' AND ';
-      }
-      whereClause += 'p.Validade >= ?';
-      whereArgs.add(dataVencimentoMinima);
-    }
-    
-    final query = '''
-      SELECT p.*, f.nome as fornecedor, t.tipo 
-      FROM produto p 
-      JOIN fornecedor f ON f.idfornecedor = p.idfornecedor 
-      JOIN tipo t ON p.idtipo = t.idtipo
-      ${whereClause.isNotEmpty ? 'WHERE $whereClause' : ''}
-    ''';
-    
-    final List<Map<String, Object?>> produtoMaps = await db.rawQuery(query, whereArgs);
-
-    return produtoMaps.map((map) {
-      return ProdutoModel(
-        idMaterial: map['idproduto'] as int?,
-        codigo: map['Codigo'] as String,
-        nome: map['Nome'] as String,
-        quantidade: map['Quantidade'] as int,
-        validade: map['Validade'] as String?,
-        local: map['Local'] as String,
-        idtipo: map['idtipo'] as int,
-        idfornecedor: map['idfornecedor'] as int,
-        entrada: map['entrada'] as String,
-        nomeFornecedor: map['fornecedor'] as String?,
-        tipoProduto: map['tipo'] as String?,
-      );
-    }).toList();
-  }
-
-  Future<void> updateProduto(ProdutoModel produto) async {
-    final db = await DatabaseHelper.initDb();
-    
-    // Cria um novo map sem os campos de relacionamento
-    final Map<String, dynamic> dadosParaAtualizar = {
-      'Codigo': produto.codigo,
-      'Nome': produto.nome,
-      'Quantidade': produto.quantidade,
-      'Validade': produto.validade,
-      'Local': produto.local,
-      'idtipo': produto.idtipo,
-      'idfornecedor': produto.idfornecedor,
-      'entrada': produto.entrada,
-    };
-    
-    await db.update(
-      'produto',
-      dadosParaAtualizar,
-      where: 'idproduto = ?',
-      whereArgs: [produto.idMaterial],
-    );
-  }
-
-  Future<void> deleteProduto(int id) async {
-    final db = await DatabaseHelper.initDb();
-    await db.delete(
-      'produto',
-      where: 'idproduto = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<List<Map<String, dynamic>>> getProdutoAgrupado() async {
-    final db = await DatabaseHelper.initDb();
-    const String sql = '''
-      SELECT 
-          p.Codigo,
-          p.Nome AS PRODUTO,
-          p."Local" AS LOCAL,
-          SUM(m.entrada) AS TOTAL_ENTRADA,
-          SUM(m.saida) AS TOTAL_SAIDA,
-          p.Quantidade AS SALDO
-      FROM 
-          movimentacao m
-      JOIN 
-          produto p ON p.idproduto = m.idmaterial
-      GROUP BY 
-          p.Codigo, p.Nome, p."Local", p.Quantidade;
-    ''';
-
     try {
-      final List<Map<String, dynamic>> resultado = await db.rawQuery(sql);
-      return resultado;
-    } catch (e) {
-      throw Exception('Erro ao executar a consulta: $e');
+      await _client.from('produto').insert(produto.toMap());
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao inserir produto: ${e.message}');
+    }
+  }
+
+  // SELECT ALL
+  Future<List<ProdutoModel>> getProduto() async {
+    try {
+      final List<dynamic> data = await _client.from('produto').select();
+      return data
+          .map((map) => ProdutoModel.fromMap(map as Map<String, dynamic>))
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao buscar materiais: ${e.message}');
+    }
+  }
+
+  // UPDATE
+  Future<void> updateProduto(ProdutoModel produto) async {
+    try {
+      await _client
+          .from('produto')
+          .update(produto.toMap())
+          .eq('idproduto', produto.idproduto!);
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao atualizar produto: ${e.message}');
+    }
+  }
+
+  // DELETE
+  Future<void> deleteProduto(int id) async {
+    try {
+      await _client.from('produto').delete().eq('idproduto', id);
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao excluir produto: ${e.message}');
     }
   }
 }

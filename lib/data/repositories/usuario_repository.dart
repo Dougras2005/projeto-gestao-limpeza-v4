@@ -1,108 +1,115 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:crypto/crypto.dart';
-import 'package:app_estoque_limpeza/core/database_helper.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:app_estoque_limpeza/data/model/usuario_model.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class UsuarioRepository with ChangeNotifier {
+  final SupabaseClient _client = Supabase.instance.client;
+
   List<Usuario> _usuarios = [];
 
-  List<Usuario> get usuarios => _usuarios;
+  /// Lista somente-leitura para a UI
+  List<Usuario> get usuarios => List.unmodifiable(_usuarios);
 
+  /* ---------------------------------------------------- *
+   * CARREGA / LISTA                                      *
+   * ---------------------------------------------------- */
   Future<void> loadUsuarios() async {
-    final db = await DatabaseHelper.initDb();
-    final List<Map<String, Object?>> usuarioMaps = await db.query('usuario');
-    _usuarios = usuarioMaps.map((map) {
-      return Usuario(
-        idusuario: map['idusuario'] as int?,
-        matricula: map['matricula'] as String,
-        nome: map['nome'] as String,
-        telefone: map['telefone'] as String,
-        email: map['email'] as String,
-        idperfil: map['idperfil'] as int,
-        senha: map['senha'] as String,
-      );
-    }).toList();
-    notifyListeners();
-  }
-  
-  Future<List<Usuario>> getUsuarios() async {
-    final db = await DatabaseHelper.initDb();
-    final List<Map<String, Object?>> usuarioMaps = await db.query('usuario');
-    return usuarioMaps.map((map) {
-      return Usuario(
-        idusuario: map['idusuario'] as int?,
-        matricula: map['matricula'] as String,
-        nome: map['nome'] as String,
-        telefone: map['telefone'] as String,
-        email: map['email'] as String,
-        idperfil: map['idperfil'] as int,
-        senha: map['senha'] as String,
-      );
-    }).toList();
-  }
-
-  Future<void> insertUsuario(Usuario usuario) async {
-    final db = await DatabaseHelper.initDb();
-    await db.insert(
-      'usuario',
-      usuario.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-    await loadUsuarios(); // Recarrega a lista após inserção
-  }
-
-  Future<void> updateUsuario(Usuario usuario) async {
-    final db = await DatabaseHelper.initDb();
-    await db.update(
-      'usuario',
-      usuario.toMap(),
-      where: 'idusuario = ?',
-      whereArgs: [usuario.idusuario],
-    );
-    await loadUsuarios(); // Recarrega a lista após atualização
-  }
-
-  Future<void> deleteUsuario(int id) async {
-    final db = await DatabaseHelper.initDb();
-    await db.delete(
-      'usuario',
-      where: 'idusuario = ?',
-      whereArgs: [id],
-    );
-    await loadUsuarios(); // Recarrega a lista após exclusão
-  }
-
-  Future<Usuario?> verifyLogin(String matricula, String password) async {
-    final db = await DatabaseHelper.initDb();
-    final encryptedPassword = sha256.convert(utf8.encode(password)).toString();
-    final result = await db.query(
-      'usuario',
-      where: 'matricula = ? AND senha = ?',
-      whereArgs: [matricula, encryptedPassword],
-    );
-
-    if (result.isNotEmpty) {
-      return Usuario(
-        idusuario: result.first['idusuario'] as int?,
-        matricula: result.first['matricula'] as String,
-        nome: result.first['nome'] as String,
-        telefone: result.first['telefone'] as String,
-        email: result.first['email'] as String,
-        idperfil: result.first['idperfil'] as int,
-        senha: result.first['senha'] as String,
-      );
-    }
-    return null;
-  }
-
-  // Método adicional para buscar usuário por ID
-  Usuario? getUsuarioById(int id) {
     try {
-      return _usuarios.firstWhere((usuario) => usuario.idusuario == id);
-    } catch (e) {
-      return null;
+      final List<dynamic> data = await _client.from('usuario').select();
+      _usuarios =
+          data.map((e) => Usuario.fromMap(e as Map<String, dynamic>)).toList();
+      notifyListeners();
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao carregar usuários: ${e.message}');
     }
   }
+
+  Future<List<Usuario>> getUsuarios() async {
+    try {
+      final List<dynamic> data = await _client.from('usuario').select();
+      return data
+          .map((e) => Usuario.fromMap(e as Map<String, dynamic>))
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao buscar usuários: ${e.message}');
+    }
+  }
+
+  /* ---------------------------------------------------- *
+   * INSERE                                               *
+   * ---------------------------------------------------- */
+  Future<void> insertUsuario(Usuario usuario) async {
+    try {
+      final dados = usuario.toMap()
+        ..['senha'] =
+            sha256.convert(utf8.encode(usuario.senha)).toString(); // hash
+      await _client.from('usuario').insert(dados);
+      await loadUsuarios();
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao inserir usuário: ${e.message}');
+    }
+  }
+
+  /* ---------------------------------------------------- *
+   * ATUALIZA                                              *
+   * ---------------------------------------------------- */
+  Future<void> updateUsuario(Usuario usuario) async {
+    if (usuario.idusuario == null) {
+      throw Exception('ID do usuário é obrigatório para atualizar.');
+    }
+
+    try {
+      final dados = usuario.toMap()
+        ..['senha'] =
+            sha256.convert(utf8.encode(usuario.senha)).toString(); // hash
+
+      await _client
+          .from('usuario')
+          .update(dados)
+          .eq('idusuario', usuario.idusuario!);
+      await loadUsuarios();
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao atualizar usuário: ${e.message}');
+    }
+  }
+
+  /* ---------------------------------------------------- *
+   * EXCLUI                                                *
+   * ---------------------------------------------------- */
+  Future<void> deleteUsuario(int id) async {
+    try {
+      await _client.from('usuario').delete().eq('idusuario', id);
+      await loadUsuarios();
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao excluir usuário: ${e.message}');
+    }
+  }
+
+  /* ---------------------------------------------------- *
+   * LOGIN                                                 *
+   * ---------------------------------------------------- */
+  Future<Usuario?> verifyLogin(String matricula, String password) async {
+    final hash = sha256.convert(utf8.encode(password)).toString();
+
+    try {
+      final Map<String, dynamic>? row = await _client
+          .from('usuario')
+          .select()
+          .eq('matricula', matricula)
+          .eq('senha', hash)
+          .maybeSingle();
+
+      return row != null ? Usuario.fromMap(row) : null;
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao verificar login: ${e.message}');
+    }
+  }
+
+  /* ---------------------------------------------------- *
+   * BUSCA LOCAL (já carregados)                           *
+   * ---------------------------------------------------- */
+  Usuario? getUsuarioById(int id) =>
+      _usuarios.firstWhere((u) => u.idusuario == id);
 }

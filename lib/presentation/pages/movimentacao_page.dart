@@ -1,9 +1,10 @@
-import 'package:app_estoque_limpeza/data/model/movimentacao_model.dart';
-import 'package:app_estoque_limpeza/presentation/viewmodel/produto_viewmodel.dart';
-import 'package:flutter/material.dart';
 import 'package:app_estoque_limpeza/data/model/produto_model.dart';
+import 'package:app_estoque_limpeza/data/model/movimentacao_model.dart';
+import 'package:app_estoque_limpeza/presentation/viewmodel/material_viewmodel.dart';
+import 'package:flutter/material.dart';
 import 'package:app_estoque_limpeza/data/repositories/movimentacao_repository.dart';
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
+import 'package:intl/intl.dart';
 
 class ProdutoDetalhesPage extends StatefulWidget {
   final ProdutoModel produto;
@@ -31,7 +32,7 @@ class ProdutoDetalhesPageState extends State<ProdutoDetalhesPage> {
 
   void _initializeProdutoAtual() {
     _produtoAtual = ProdutoModel(
-      idMaterial: widget.produto.idMaterial,
+      idproduto: widget.produto.idproduto,
       codigo: widget.produto.codigo,
       nome: widget.produto.nome,
       quantidade: widget.produto.quantidade,
@@ -78,13 +79,18 @@ class ProdutoDetalhesPageState extends State<ProdutoDetalhesPage> {
     }
 
     try {
+      if (_produtoAtual?.idproduto == null) {
+  // Trate o erro, mostre um alerta, etc.
+  return;
+}
+
       final movimentacao = Movimentacao(
-        entradaData: _tipoMovimentacao == 'Entrada' ? data : '',
-        saidaData: _tipoMovimentacao == 'Saída' ? data : '',
-        entrada: _tipoMovimentacao == 'Entrada' ? quantidade : null,
-        saida: _tipoMovimentacao == 'Saída' ? quantidade : null,
-        idproduto: _produtoAtual!.idMaterial!,
-        idusuario: 1,
+        entradaData: null,
+        saidaData: DateFormat('yyyy-MM-dd').format(DateFormat('dd/MM/yyyy').parse(data)),
+        idproduto: _produtoAtual?.idproduto,      // campo no seu modelo Movimentacao
+        idusuario: 2,                               // ajuste conforme login
+        entrada: null,
+        saida: quantidade,
       );
 
       await _movimentacaoRepository.insertMovimentacao(movimentacao);
@@ -92,7 +98,7 @@ class ProdutoDetalhesPageState extends State<ProdutoDetalhesPage> {
       // Atualiza produto com nova quantidade
       setState(() {
         _produtoAtual = ProdutoModel(
-          idMaterial: _produtoAtual!.idMaterial,
+          idproduto: _produtoAtual!.idproduto,
           codigo: _produtoAtual!.codigo,
           nome: _produtoAtual!.nome,
           quantidade: _tipoMovimentacao == 'Entrada'
@@ -108,7 +114,7 @@ class ProdutoDetalhesPageState extends State<ProdutoDetalhesPage> {
         );
       });
 
-      await _produtoViewModel.updateProduto(_produtoAtual!);
+      await _produtoViewModel.updateMaterial(_produtoAtual!);
 
       _quantidadeController.clear();
       _dataController.clear();
@@ -170,9 +176,8 @@ class ProdutoDetalhesPageState extends State<ProdutoDetalhesPage> {
                             style: const TextStyle(fontSize: 16)),
                         Text('Quantidade: ${_produtoAtual!.quantidade}',
                             style: const TextStyle(fontSize: 16)),
-                        if (_produtoAtual!.validade != null)
-                          Text('Validade: ${_produtoAtual!.validade}',
-                              style: const TextStyle(fontSize: 16)),
+                        Text('Validade: ${_produtoAtual!.validade}',
+                            style: const TextStyle(fontSize: 16)),
                         Text('Local: ${_produtoAtual!.local}',
                             style: const TextStyle(fontSize: 16)),
                         Text('Fornecedor: ${_produtoAtual!.nomeFornecedor}',

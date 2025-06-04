@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:app_estoque_limpeza/core/database_helper.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:app_estoque_limpeza/data/model/historico_model.dart';
 
 class MovimentacaoDetalhadaPage extends StatefulWidget {
@@ -11,6 +11,8 @@ class MovimentacaoDetalhadaPage extends StatefulWidget {
 }
 
 class _MovimentacaoDetalhadaPageState extends State<MovimentacaoDetalhadaPage> {
+  final supabase = Supabase.instance.client;
+
   Future<List<HistoricoModel>> _movimentacoesFuture = Future.value([]);
   List<HistoricoModel> _movimentacoes = [];
 
@@ -32,32 +34,29 @@ class _MovimentacaoDetalhadaPageState extends State<MovimentacaoDetalhadaPage> {
   }
 
   Future<List<HistoricoModel>> getMovimentacoesDetalhadas() async {
-    final db = await DatabaseHelper.initDb();
-    final List<Map<String, Object?>> results = await db.rawQuery('''
-      SELECT
-        u.matricula,
-        u.nome,
-        u.telefone,
-        m.saida_data,
-        m.saida,
-        p.Nome AS produto,
-        p.Quantidade AS saldo
-      FROM movimentacao m
-      JOIN usuario u ON u.idusuario = m.idusuario
-      JOIN produto p ON p.idproduto = m.idmaterial
-      WHERE saida_data <> ''
-      ORDER BY m.saida_data
-    ''');
+    final response = await supabase
+        .from('movimentacao')
+        .select('''
+          saida_data,
+          saida,
+          usuario:idusuario (matricula, nome, telefone),
+          produto:idproduto (nome, quantidade)
+        ''')
+        .not('saida_data', 'is', null)
+        .order('saida_data');
 
-    return results.map((map) {
+    return (response as List).map((map) {
+      final usuario = map['usuario'] ?? {};
+      final produto = map['produto'] ?? {};
+
       return HistoricoModel(
-        matricula: map['matricula'] as String,
-        nome: map['nome'] as String,
-        telefone: map['telefone'] as String,
-        saidaData: map['saida_data'] as String,
-        saida: (map['saida'] as int?) ?? 0,
-        produto: map['produto'] as String,
-        saldo: (map['saldo'] as int?) ?? 0,
+        matricula: usuario['matricula'] ?? '',
+        nome: usuario['nome'] ?? '',
+        telefone: usuario['telefone'] ?? '',
+        saidaData: map['saida_data'] ?? '',
+        saida: map['saida'] ?? 0,
+        produto: produto['Nome'] ?? '',
+        saldo: produto['Quantidade'] ?? 0,
       );
     }).toList();
   }
@@ -80,7 +79,7 @@ class _MovimentacaoDetalhadaPageState extends State<MovimentacaoDetalhadaPage> {
             try {
               final data = formatoDataBanco.parse(mov.saidaData);
               return data.isAfter(picked.start.subtract(const Duration(days: 1))) &&
-                     data.isBefore(picked.end.add(const Duration(days: 1)));
+                  data.isBefore(picked.end.add(const Duration(days: 1)));
             } catch (_) {
               return false;
             }

@@ -1,78 +1,65 @@
-import 'package:app_estoque_limpeza/core/database_helper.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:app_estoque_limpeza/data/model/fornecedor_model.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class FornecedorRepository {
+  final SupabaseClient _client = Supabase.instance.client;
+
+  // INSERT ---------------------------------------------------------------
   Future<void> insertFornecedor(Fornecedor fornecedor) async {
-    final db = await DatabaseHelper.initDb();
-    await db.insert(
-      'fornecedor',
-      fornecedor.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
-
-  Future<List<Fornecedor>> getFornecedores() async {
-    final db = await DatabaseHelper.initDb();
-    final List<Map<String, Object?>> fornecedorMaps =
-        await db.query('fornecedor');
-    return fornecedorMaps.map((map) {
-      return Fornecedor(
-        idfornecedor: map['idfornecedor'] as int?,
-        nome: map['nome'] as String,
-        endereco: map['endereco'] as String,
-        telefone: map['telefone'] as String,
-        cnpj: map['cnpj'] as String,
-        email: map['email'] as String,
-      );
-    }).toList();
-  }
-
-  Future<void> updateFornecedor(Fornecedor fornecedor) async {
-    final db = await DatabaseHelper.initDb();
-    await db.update(
-      'fornecedor',
-      fornecedor.toMap(),
-      where: 'idfornecedor = ?',
-      whereArgs: [fornecedor.idfornecedor],
-    );
-  }
-
-  Future<void> deleteFornecedor(int id) async {
-    final db = await DatabaseHelper.initDb();
-    await db.delete(
-      'fornecedor',
-      where: 'idfornecedor = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<int?> getIdByForenecedor(String fornecedor) async {
-    final db = await DatabaseHelper.initDb();
-    final List<Map<String, Object?>> result = await db.query(
-      'fornecedor',
-      columns: ['idfornecedor'],
-      where: 'nome = ?',
-      whereArgs: [fornecedor],
-      limit: 1,
-    );
-
-    if (result.isNotEmpty) {
-      return result.first['idfornecedor'] as int?;
+    try {
+      await _client.from('fornecedor').insert(fornecedor.toMap());
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao inserir fornecedor: ${e.message}');
     }
-    return null; // Retorna null se não encontrar o tipo
   }
 
+  // SELECT ALL -----------------------------------------------------------
+  Future<List<Fornecedor>> getFornecedores() async {
+    try {
+      final List<dynamic> data = await _client.from('fornecedor').select();
+      return data
+          .map((m) => Fornecedor.fromMap(m as Map<String, dynamic>))
+          .toList();
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao buscar fornecedores: ${e.message}');
+    }
+  }
+
+  // UPDATE ---------------------------------------------------------------
+  Future<void> updateFornecedor(Fornecedor fornecedor) async {
+    try {
+      await _client
+          .from('fornecedor')
+          .update(fornecedor.toMap())
+          .eq('idfornecedor', fornecedor.idfornecedor!);
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao atualizar fornecedor: ${e.message}');
+    }
+  }
+
+  // DELETE ---------------------------------------------------------------
+  Future<void> deleteFornecedor(int id) async {
+    try {
+      await _client.from('fornecedor').delete().eq('idfornecedor', id);
+    } on PostgrestException catch (e) {
+      throw Exception('Erro ao remover fornecedor: ${e.message}');
+    }
+  }
+
+  // OBTÉM ID PELO NOME ---------------------------------------------------
+  Future<int?> getIdByFornecedor(String nome) async {
+    final Map<String, dynamic>? row = await _client
+        .from('fornecedor')
+        .select('idfornecedor')
+        .eq('nome', nome)
+        .maybeSingle();
+
+    return row?['idfornecedor'] as int?;
+  }
+
+  // LISTA SÓ OS NOMES ----------------------------------------------------
   Future<List<String>> getNomesFornecedores() async {
-    final db = await DatabaseHelper.initDb();
-
-    // Consulta os nomes dos fornecedores
-    final List<Map<String, Object?>> result = await db.query(
-      'fornecedor',
-      columns: ['nome'], // Seleciona apenas a coluna 'nome'
-    );
-
-    // Mapeia o resultado para uma lista de Strings (nomes)
-    return result.map((map) => map['nome'] as String).toList();
+    final List<dynamic> data = await _client.from('fornecedor').select('nome');
+    return data.map((row) => row['nome'] as String).toList();
   }
 }
