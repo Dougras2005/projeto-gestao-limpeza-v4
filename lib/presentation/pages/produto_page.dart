@@ -111,7 +111,7 @@ class ProdutosState extends State<ProdutosPage> {
   idtipo: idTipo!,
   idfornecedor: idFornecedor!,
   entrada: _dataEntradaController.text.isNotEmpty
-      ? DateFormat('yyyy-MM-dd').format(DateFormat('dd/MM/yyyy').parse(_vencimentoController.text))
+      ? DateFormat('yyyy-MM-dd').format(DateFormat('dd/MM/yyyy').parse(_dataEntradaController.text))
       : '',
 );
 

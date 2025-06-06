@@ -59,9 +59,9 @@ class FornecedorState extends State<FornecedorPage> with SingleTickerProviderSta
 
   Future<void> _salvarFornecedor() async {
     if (_formKey.currentState?.validate() ?? false) {
-      try {
+     // try {
         final fornecedor = Fornecedor(
-          // idfornecedor: _fornecedorEmEdicaoId,
+         
           nome: _nomeController.text,
           endereco: _enderecoController.text,
           telefone: _telefoneController.text,
@@ -69,11 +69,15 @@ class FornecedorState extends State<FornecedorPage> with SingleTickerProviderSta
           email: _emailController.text,
         );
 
+
+
         if (_fornecedorEmEdicaoId == null) {
           // Cadastrar novo fornecedor
           await _fornecedorRepository.insertFornecedor(fornecedor);
         } else {
           // Atualizar fornecedor existente
+         fornecedor.idfornecedor = _fornecedorEmEdicaoId;
+
           await _fornecedorRepository.updateFornecedor(fornecedor);
         }
 
@@ -89,12 +93,12 @@ class FornecedorState extends State<FornecedorPage> with SingleTickerProviderSta
         _limparCampos();
         await _carregarFornecedores();
         _tabController.animateTo(1); // Muda para a aba de listagem
-      } catch (e) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao salvar fornecedor: $e')),
-        );
-      }
+      // } catch (e) {
+      //   if (!mounted) return;
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(content: Text('Erro ao salvar fornecedor: $e')),
+      //   );
+      // }
     }
   }
 

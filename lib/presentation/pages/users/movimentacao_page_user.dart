@@ -4,7 +4,7 @@ import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import 'package:app_estoque_limpeza/data/model/produto_model.dart';
 import 'package:app_estoque_limpeza/data/model/movimentacao_model.dart';
 import 'package:app_estoque_limpeza/data/repositories/movimentacao_repository.dart';
-import 'package:intl/intl.dart'; // ← se já existir MaterialViewModel, troque aqui também
+
 
 class MaterialDetalhesPage extends StatefulWidget {
   final ProdutoModel material;                     // ← ERA ProdutoModel
@@ -19,15 +19,15 @@ class _MaterialDetalhesPageState extends State<MaterialDetalhesPage> {
   final TextEditingController _quantidadeController = TextEditingController();
   final TextEditingController _dataController = TextEditingController();
 
-  final MovimentacaoRepository _movimentacaoRepo = MovimentacaoRepository();
+  final MovimentacaoRepository _movimentacaoRepository = MovimentacaoRepository();
   final ProdutoViewModel _produtoVM = ProdutoViewModel(); // troque se houver MaterialViewModel
-
-  late ProdutoModel _materialAtual;                // ← ERA ProdutoModel?
+  String _tipoMovimentacao = 'Entrada';
+  late ProdutoModel _produtoAtual;                // ← ERA ProdutoModel?
 
   @override
   void initState() {
     super.initState();
-    _materialAtual = widget.material;               // cópia inicial
+    _produtoAtual = widget.material;               // cópia inicial
   }
 
   @override
@@ -50,36 +50,43 @@ class _MaterialDetalhesPageState extends State<MaterialDetalhesPage> {
       _showDialog('Erro', 'Informe a data no formato DD/MM/AAAA.');
       return;
     }
-    if (quantidade > _materialAtual.quantidade) {
+    if (quantidade > _produtoAtual.quantidade) {
       _showDialog('Erro', 'Quantidade insuficiente em estoque.');
       return;
     }
 
     try {
       final movimentacao = Movimentacao(
-        entradaData: null,
-        saidaData: DateFormat('yyyy-MM-dd').format(DateFormat('dd/MM/yyyy').parse(data)),
-        idproduto: _materialAtual.idproduto!,      // campo no seu modelo Movimentacao
-        idusuario: 2,                               // ajuste conforme login
-        entrada: null,
-        saida: quantidade,
+        entradaData: _tipoMovimentacao == 'Entrada' ? data : '',
+        saidaData: _tipoMovimentacao == 'Saída' ? data : '',
+        idproduto: _produtoAtual.idproduto!,
+        idusuario: 1,
       );
 
-      await _movimentacaoRepo.insertMovimentacao(movimentacao);
-
+      await _movimentacaoRepository.insertMovimentacao(movimentacao);
+      
       setState(() {
-        _materialAtual = _materialAtual.copyWith(
-          quantidade: _materialAtual.quantidade - quantidade,
+        _produtoAtual = ProdutoModel(
+          idproduto: _produtoAtual.idproduto,
+          codigo: _produtoAtual.codigo,
+          nome: _produtoAtual.nome,
+          quantidade: _tipoMovimentacao == 'Entrada'
+              ? _produtoAtual.quantidade + quantidade
+              : _produtoAtual.quantidade - quantidade,
+          validade: _produtoAtual.validade,
+          local: _produtoAtual.local,
+          idtipo: _produtoAtual.idtipo,
+          idfornecedor: _produtoAtual.idfornecedor,
+          entrada: _produtoAtual.entrada,
         );
       });
-
-      await _produtoVM.updateMaterial(_materialAtual); // troque se usar MaterialViewModel
+      await _produtoVM.updateMaterial(_produtoAtual); // troque se usar MaterialViewModel
 
       _quantidadeController.clear();
       _dataController.clear();
 
       _showDialog('Sucesso',
-          'Saída registrada.\nNova quantidade: ${_materialAtual.quantidade}');
+          'Saída registrada.\nNova quantidade: ${_produtoAtual.quantidade}');
     } catch (e) {
       _showDialog('Erro', 'Falha ao registrar saída: $e');
     }
@@ -91,7 +98,7 @@ class _MaterialDetalhesPageState extends State<MaterialDetalhesPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Saída do Material: ${_materialAtual.nome}',
+          'Saída do Material: ${_produtoAtual.nome}',
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         backgroundColor: Colors.blueAccent,
@@ -126,11 +133,11 @@ class _MaterialDetalhesPageState extends State<MaterialDetalhesPage> {
                       fontSize: 18,
                       color: Colors.blueGrey)),
               const Divider(),
-              _row('Código', _materialAtual.codigo),
-              _row('Nome', _materialAtual.nome),
-              _row('Quantidade', _materialAtual.quantidade.toString()),
-              _row('Local', _materialAtual.local),
-              _row('Validade', _materialAtual.validade.toString()),
+              _row('Código', _produtoAtual.codigo),
+              _row('Nome', _produtoAtual.nome),
+              _row('Quantidade', _produtoAtual.quantidade.toString()),
+              _row('Local', _produtoAtual.local),
+              _row('Validade', _produtoAtual.validade.toString()),
             ],
           ),
         ),

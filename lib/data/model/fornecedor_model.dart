@@ -1,5 +1,5 @@
 class Fornecedor {
-  final int? idfornecedor;
+  int? idfornecedor;
   final String nome;
   final String endereco;
   final String telefone;
